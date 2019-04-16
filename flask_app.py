@@ -8,6 +8,9 @@ import json
 # Глобальная переменная для хранения данных пользователя
 sessionStorage = {}
 
+# Математические операторы
+operators = ['/', '*', '+', '-']
+
 # Импорт всех загадок из файла
 with open('/home/HHsodmHH/mysite/filename.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
@@ -59,7 +62,11 @@ def handle_dialog(res, req):
         # Приветствие
         res['response']['text'] = 'Привет! Как тебя зовут?'
         sessionStorage[user_id] = {
-            'first_name': None
+            'first_name': None,
+            'answer': '',
+            'math': False,
+            'mystery': False,
+            'exp': ''
         }
         return
 
@@ -108,6 +115,18 @@ def handle_dialog(res, req):
             sessionStorage[user_id]['answer'] = ''
         return
 
+    # Если пользователь решил решить пример
+    elif sessionStorage[user_id]['exp']:
+        # Если ответ не правильный
+        result = req['request']['nlu']['tokens'][0]
+        if sessionStorage[user_id]['exp'] != result:
+            res['response']['text'] = 'Неправильно!'
+        else:
+            # Если правильный очистка ответа
+            res['response']['text'] = 'Правильно!'
+            sessionStorage[user_id]['exp'] = ''
+        return
+
     # Если пользователь попросил загадку
     elif 'загадку' in req['request']['nlu']['tokens']:
         # Случайная загадка из словаря с загадками
@@ -115,24 +134,43 @@ def handle_dialog(res, req):
         res['response']['text'] = question
         # Запись в сессию случайной загадки
         sessionStorage[user_id]['answer'] = data[question].split()
+        sessionStorage[user_id]['mystery'] = True
+        return
+
+    # Если пользователь попросил пример
+    elif 'пример' in req['request']['nlu']['tokens']:
+        # Запись в сессию
+        sessionStorage[user_id]['math'] = True
+
+        # Создание примера
+        exp = str(random.randint(0, 100))
+        exp += str(random.choice(operators)[0])
+        exp += str(random.randint(0, 100))
+        res['response']['text'] = exp
+        # Запись ответа в сессию
+        sessionStorage[user_id]['exp'] = str(eval(exp))
         return
 
     # Если пользователь хочет продолжить игру
     elif 'да' in req['request']['nlu']['tokens']:
         # Случайная загадка из словаря с загадками
-        question = random.choice(list(data))
-        res['response']['text'] = question
-        # Запись в сессию случайной загадки
-        sessionStorage[user_id]['answer'] = data[question].split()
-        return
+        if sessionStorage[user_id]['mystery']:
+            question = random.choice(list(data))
+            res['response']['text'] = question
+            # Запись в сессию случайной загадки
+            sessionStorage[user_id]['answer'] = data[question].split()
+            return
 
     # Если пользователь решил закончить игру
     elif 'нет' in req['request']['nlu']['tokens']:
-        # Конец игры = True
-        res['response']['text'] = 'Пока-пока!'
-        res['response']['end_session'] = True
+        # Конец игр
+        sessionStorage[user_id]['mystery'] = False
+        sessionStorage[user_id]['math'] = False
+        # Предложение выбрать новую игру
+        res['response']['text'] = 'Выбери игру'
         return
 
+    # Если пользователь ввел неизвестную команду
     res['response']['text'] = 'Я не смогла понять ваш ответ'
 
 
