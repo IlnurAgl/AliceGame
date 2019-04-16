@@ -73,16 +73,31 @@ def handle_dialog(res, req):
             return
         else:
             # Если пользователь ввел имя
+            sessionStorage[user_id]['answer'] = ''
             sessionStorage[user_id]['first_name'] = first_name
             text = f'Приятно познакомиться, {first_name.title()}.'
             text += 'Я Алиса. Напиши "Загадку"'
             res['response']['text'] = text
             return
 
+    elif sessionStorage[user_id]['answer']:
+        t = False
+        for i in sessionStorage[user_id]['answer']:
+            if i.lower() not in req['request']['nlu']['tokens']:
+                t = True
+                break
+        if t:
+            res['response']['text'] = 'Неправильно!'
+        else:
+            res['response']['text'] = 'Правильно!'
+        return
+
     # Если пользователь попросил загадку
     elif 'загадку' in req['request']['nlu']['tokens']:
         # Случайная загадка из словаря с загадками
-        res['response']['text'] = random.choice(list(data))
+        question = random.choice(list(data))
+        res['response']['text'] = question
+        sessionStorage[user_id]['answer'] = data[question].split()
         return
 
 
