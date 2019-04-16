@@ -83,7 +83,7 @@ def handle_dialog(res, req):
             sessionStorage[user_id]['answer'] = ''
             sessionStorage[user_id]['first_name'] = first_name
             text = f'Приятно познакомиться, {first_name.title()}.'
-            text += 'Я Алиса. Напиши "Загадку"'
+            text += 'Я Алиса. Напиши "Загадку" или "Пример" для выбора игры'
             res['response']['text'] = text
             return
 
@@ -123,7 +123,7 @@ def handle_dialog(res, req):
             res['response']['text'] = 'Неправильно!'
         else:
             # Если правильный очистка ответа
-            res['response']['text'] = 'Правильно!'
+            res['response']['text'] = 'Правильно! Продолжим играть?'
             sessionStorage[user_id]['exp'] = ''
         return
 
@@ -147,6 +147,7 @@ def handle_dialog(res, req):
         exp += str(random.choice(operators)[0])
         exp += str(random.randint(0, 100))
         res['response']['text'] = exp
+
         # Запись ответа в сессию
         sessionStorage[user_id]['exp'] = str(eval(exp))
         return
@@ -161,13 +162,36 @@ def handle_dialog(res, req):
             sessionStorage[user_id]['answer'] = data[question].split()
             return
 
+        # Создать новый пример
+        elif sessionStorage[user_id]['math']:
+            # Создание примера
+            exp = str(random.randint(0, 100))
+            exp += str(random.choice(operators)[0])
+            exp += str(random.randint(0, 100))
+            res['response']['text'] = exp
+
+            # Запись ответа в сессию
+            sessionStorage[user_id]['exp'] = str(eval(exp))
+
     # Если пользователь решил закончить игру
     elif 'нет' in req['request']['nlu']['tokens']:
         # Конец игр
         sessionStorage[user_id]['mystery'] = False
         sessionStorage[user_id]['math'] = False
+
         # Предложение выбрать новую игру
         res['response']['text'] = 'Выбери игру'
+        # Кнопки для выбора игры
+        res['response']['buttons'] = [
+            {
+                'title': 'Загадку',
+                'hide': True
+            },
+            {
+                'title': 'Пример',
+                'hide': True
+            }
+        ]
         return
 
     # Если пользователь ввел неизвестную команду
