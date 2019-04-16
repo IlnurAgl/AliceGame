@@ -94,6 +94,16 @@ def handle_dialog(res, req):
         else:
             # Если пользователь ответил правиль
             res['response']['text'] = 'Правильно! Продолжим играть?'
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
             # Удаление ответа из сессии
             sessionStorage[user_id]['answer'] = ''
         return
@@ -115,6 +125,15 @@ def handle_dialog(res, req):
         # Запись в сессию случайной загадки
         sessionStorage[user_id]['answer'] = data[question].split()
         return
+
+    # Если пользователь решил закончить игру
+    elif 'нет' in req['request']['nlu']['tokens']:
+        # Конец игры = True
+        res['response']['text'] = 'Пока-пока!'
+        res['response']['end_session'] = True
+        return
+
+    res['response']['text'] = 'Я не смогла понять ваш ответ'
 
 
 # Функция для получения имени пользователя
