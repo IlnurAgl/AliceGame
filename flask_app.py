@@ -80,16 +80,22 @@ def handle_dialog(res, req):
             res['response']['text'] = text
             return
 
+    # Если пользователь начал игру
     elif sessionStorage[user_id]['answer']:
         t = False
+        # Проверка ответа пользователя
         for i in sessionStorage[user_id]['answer']:
             if i.lower() not in req['request']['nlu']['tokens']:
                 t = True
                 break
         if t:
+            # Если пользователь ошибся
             res['response']['text'] = 'Неправильно!'
         else:
-            res['response']['text'] = 'Правильно!'
+            # Если пользователь ответил правиль
+            res['response']['text'] = 'Правильно! Продолжим играть?'
+            # Удаление ответа из сессии
+            sessionStorage[user_id]['answer'] = ''
         return
 
     # Если пользователь попросил загадку
@@ -97,6 +103,16 @@ def handle_dialog(res, req):
         # Случайная загадка из словаря с загадками
         question = random.choice(list(data))
         res['response']['text'] = question
+        # Запись в сессию случайной загадки
+        sessionStorage[user_id]['answer'] = data[question].split()
+        return
+
+    # Если пользователь хочет продолжить игру
+    elif 'да' in req['request']['nlu']['tokens']:
+        # Случайная загадка из словаря с загадками
+        question = random.choice(list(data))
+        res['response']['text'] = question
+        # Запись в сессию случайной загадки
         sessionStorage[user_id]['answer'] = data[question].split()
         return
 
