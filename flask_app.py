@@ -17,6 +17,34 @@ operators = ['/', '*', '+', '-']
 with open('/home/HHsodmHH/mysite/filename.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
+# Кнопки Да, Нет
+buttonsYesNo = [
+    {
+        'title': 'Да',
+        'hide': True
+    },
+    {
+        'title': 'Нет',
+        'hide': True
+    }
+]
+
+# Кнопки с названиями игр
+buttonsGames = [
+    {
+        'title': 'Загадку',
+        'hide': True
+    },
+    {
+        'title': 'Пример',
+        'hide': True
+    },
+    {
+        'title': 'Города',
+        'hide': True
+    }
+]
+
 # Конфигурация для создания логов
 logging.basicConfig(
     level=logging.INFO,
@@ -131,19 +159,13 @@ def handle_dialog(res, req):
             # Вывод ответ
             ans = sessionStorage[user_id]['answer']
             res['response']['text'] = 'Ответ: ' + ' '.join(ans)
+
             # Предложение сыграть еще раз
             res['response']['text'] += '. Сыграем еще?'
+
             # Кнопки для выбора ответа
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
+
             # Обнуление сессии
             sessionStorage[user_id]['answer'] = ''
             return
@@ -152,19 +174,13 @@ def handle_dialog(res, req):
             # Вывод ответа
             res['response']['text'] = 'Ответ: '
             res['response']['text'] += sessionStorage[user_id]['exp']
+
             # Предложение сыграть еще раз
             res['response']['text'] += '. Сыграем еще?'
+
             # Кнопки для выбора ответа
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
+
             # Обнуление сессии
             sessionStorage[user_id]['exp'] = ''
             return
@@ -175,19 +191,13 @@ def handle_dialog(res, req):
             result = sessionStorage[user_id]['distance']
             res['response']['text'] = 'Ответ: '
             res['response']['text'] += str(int(result))
+
             # Предложение сыграть еще раз
             res['response']['text'] += '. Сыграем еще?'
+
             # Кнопки для выбора ответа
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
+
             # Обнуление сессии
             sessionStorage[user_id]['distance'] = ''
             return
@@ -206,16 +216,8 @@ def handle_dialog(res, req):
         else:
             # Если пользователь ответил правиль
             res['response']['text'] = 'Правильно! Продолжим играть?'
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
+
             # Удаление ответа из сессии
             sessionStorage[user_id]['answer'] = ''
         return
@@ -229,17 +231,9 @@ def handle_dialog(res, req):
         else:
             # Если правильный очистка ответа
             res['response']['text'] = 'Правильно! Продолжим играть?'
+
             # Кнопки для ответа
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
 
             # Обнуление ответа
             sessionStorage[user_id]['exp'] = ''
@@ -268,16 +262,7 @@ def handle_dialog(res, req):
         else:
             res['response']['text'] = 'Правильно! Сыграем еще?'
             # Кнопки для ответа
-            res['response']['buttons'] = [
-                {
-                    'title': 'Да',
-                    'hide': True
-                },
-                {
-                    'title': 'Нет',
-                    'hide': True
-                }
-            ]
+            res['response']['buttons'] = buttonsYesNo
         return
 
     # Если пользователь попросил загадку
@@ -442,21 +427,9 @@ def handle_dialog(res, req):
 
         # Предложение выбрать новую игру
         res['response']['text'] = 'Выбери игру'
+
         # Кнопки для выбора игры
-        res['response']['buttons'] = [
-            {
-                'title': 'Загадку',
-                'hide': True
-            },
-            {
-                'title': 'Пример',
-                'hide': True
-            },
-            {
-                'title': 'Города',
-                'hide': True
-            }
-        ]
+        res['response']['buttons'] = buttonsGames
         return
 
     # Если пользователь запрос помощь о приложении
@@ -469,21 +442,9 @@ def handle_dialog(res, req):
     elif 'умеешь' in req['nlu']['tokens']:
         res['response']['text'] = 'Я могу загадать загадку или придумать '
         res['response']['text'] += 'легкий математический пример'
+
         # Кнопки для начала игры
-        res['response']['buttons'] = [
-            {
-                'title': 'Загадку',
-                'hide': True
-            },
-            {
-                'title': 'Пример',
-                'hide': True
-            },
-            {
-                'title': 'Города',
-                'hide': True
-            }
-        ]
+        res['response']['buttons'] = buttonsGames
         return
 
     # Если пользователь ввел неизвестную команду
