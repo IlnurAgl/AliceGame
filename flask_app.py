@@ -2,8 +2,10 @@ from flask import Flask, request
 import logging
 import random
 import json
+import requests
+from cities import cities
+from math import sin, cos, sqrt, atan2, radians
 # Импорт библиотек
-
 
 # Глобальная переменная для хранения данных пользователя
 sessionStorage = {}
@@ -66,7 +68,9 @@ def handle_dialog(res, req):
             'answer': '',
             'math': False,
             'mystery': False,
-            'exp': ''
+            'exp': '',
+            'distance': '',
+            'cities': True
         }
         return
 
@@ -83,7 +87,8 @@ def handle_dialog(res, req):
             sessionStorage[user_id]['answer'] = ''
             sessionStorage[user_id]['first_name'] = first_name
             text = f'Приятно познакомиться, {first_name.title()}.'
-            text += 'Я Алиса. Напиши "Загадку" или "Пример" для выбора игры'
+            text += 'Я Алиса. Напиши "Загадку" или "Пример" или "Города" '
+            text += 'для выбора игры'
             res['response']['text'] = text
             return
 
@@ -145,7 +150,8 @@ def handle_dialog(res, req):
         # Если запущена игра для решения примеров
         elif sessionStorage[user_id]['math']:
             # Вывод ответа
-            res['response']['text'] = 'Ответ: ' + sessionStorage[user_id]['exp']
+            res['response']['text'] = 'Ответ: '
+            res['response']['text'] += sessionStorage[user_id]['exp']
             # Предложение сыграть еще раз
             res['response']['text'] += '. Сыграем еще?'
             # Кнопки для выбора ответа
@@ -161,6 +167,29 @@ def handle_dialog(res, req):
             ]
             # Обнуление сессии
             sessionStorage[user_id]['exp'] = ''
+            return
+
+        # Если игра в расстояние между городами
+        elif sessionStorage[user_id]['cities']:
+            # Вывод ответа
+            result = sessionStorage[user_id]['distance']
+            res['response']['text'] = 'Ответ: '
+            res['response']['text'] += str(int(result))
+            # Предложение сыграть еще раз
+            res['response']['text'] += '. Сыграем еще?'
+            # Кнопки для выбора ответа
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
+            # Обнуление сессии
+            sessionStorage[user_id]['distance'] = ''
             return
 
     # Если пользователь начал игру
@@ -193,8 +222,8 @@ def handle_dialog(res, req):
 
     # Если пользователь решил решить пример
     elif sessionStorage[user_id]['exp']:
-        # Если ответ не правильный
         result = req['request']['nlu']['tokens'][0]
+        # Если ответ не правильный
         if sessionStorage[user_id]['exp'] != result:
             res['response']['text'] = 'Неправильно!('
         else:
@@ -214,6 +243,41 @@ def handle_dialog(res, req):
 
             # Обнуление ответа
             sessionStorage[user_id]['exp'] = ''
+        return
+
+    # Если пользователь выбрал игру в города
+    elif sessionStorage[user_id]['distance']:
+        # Получение ответа пользователя
+        result = req['request']['nlu']['tokens'][0]
+        if int(result) > sessionStorage[user_id]['distance']:
+            res['response']['text'] = 'Меньше'
+            res['response']['text'] = [
+                {
+                    'title': 'Ответ',
+                    'hide': True
+                }
+            ]
+        elif int(result) < int(sessionStorage[user_id]['distance']):
+            res['response']['text'] = 'Больше'
+            res['response']['text'] = [
+                {
+                    'title': 'Ответ',
+                    'hide': True
+                }
+            ]
+        else:
+            res['response']['text'] = 'Правильно! Сыграем еще?'
+            # Кнопки для ответа
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
         return
 
     # Если пользователь попросил загадку
@@ -283,6 +347,28 @@ def handle_dialog(res, req):
         sessionStorage[user_id]['exp'] = str(result)
         return
 
+    # Игра в отгадывание расстояние между городами
+    elif 'города' in req['request']['nlu']['tokens']:
+        # Получение двух городов
+        first = str(random.choice(cities))
+        second = str(random.choice(cities))
+        while first == second:
+            first = str(random.choice(cities))
+
+        # Запись игры в сессию
+        sessionStorage[user_id]['cities'] = True
+
+        # Запись дистанции в сессию
+        distance = get_distance(
+            get_coordinates(first), get_coordinates(second))
+        sessionStorage[user_id]['distance'] = int(distance)
+
+        # Вывод результат
+        res['response']['text'] = 'Отгадай расстояние между городами '
+        res['response']['text'] += first + ' и '
+        res['response']['text'] += second
+        return
+
     # Если пользователь хочет продолжить игру
     elif 'да' in req['request']['nlu']['tokens']:
         # Случайная загадка из словаря с загадками
@@ -323,13 +409,36 @@ def handle_dialog(res, req):
             res['response']['text'] = str(exp)
             # Запись ответа в сессию
             sessionStorage[user_id]['exp'] = str(result)
-        return
+            return
+
+        # Новая пара городов
+        elif sessionStorage[user_id]['cities']:
+            # Получение двух городов
+            first = str(random.choice(cities))
+            second = str(random.choice(cities))
+            while first == second:
+                first = str(random.choice(cities))
+
+            # Запись игры в сессию
+            sessionStorage[user_id]['cities'] = True
+
+            # Запись дистанции в сессию
+            distance = get_distance(
+                get_coordinates(first), get_coordinates(second))
+            sessionStorage[user_id]['distance'] = int(distance)
+
+            # Вывод результат
+            res['response']['text'] = 'Отгадай расстояние между городами '
+            res['response']['text'] += first + ' и '
+            res['response']['text'] += second
+            return
 
     # Если пользователь решил закончить игру
     elif 'нет' in req['request']['nlu']['tokens']:
         # Конец игр
         sessionStorage[user_id]['mystery'] = False
         sessionStorage[user_id]['math'] = False
+        sessionStorage[user_id]['cities'] = False
 
         # Предложение выбрать новую игру
         res['response']['text'] = 'Выбери игру'
@@ -341,6 +450,10 @@ def handle_dialog(res, req):
             },
             {
                 'title': 'Пример',
+                'hide': True
+            },
+            {
+                'title': 'Города',
                 'hide': True
             }
         ]
@@ -365,6 +478,10 @@ def handle_dialog(res, req):
             {
                 'title': 'Пример',
                 'hide': True
+            },
+            {
+                'title': 'Города',
+                'hide': True
             }
         ]
         return
@@ -382,6 +499,53 @@ def get_first_name(req):
             # то возвращаем её значение.
             # Во всех остальных случаях возвращаем None.
             return entity['value'].get('first_name', None)
+
+
+# Функция для получения координат города
+def get_coordinates(city):
+
+    # url yandex api geocode
+    url = "https://geocode-maps.yandex.ru/1.x/"
+
+    # Параметры для запроса
+    params = {
+        'geocode': city,
+        'format': 'json'
+    }
+
+    # Получение результата
+    response = requests.get(url, params)
+    # Перобразование в json формат
+    json = response.json()
+    point_str = json['response']['GeoObjectCollection']['featureMember']
+    point_str = point_str[0]['GeoObject']['Point']['pos']
+    point_array = [float(x) for x in point_str.split(' ')]
+
+    # Возвращение точки
+    return point_array
+
+
+# Функция для получения расстояния между координатами
+def get_distance(p1, p2):
+
+    R = 6373.0
+
+    # Получение широт и долгот
+    lon1 = radians(p1[0])
+    lat1 = radians(p1[1])
+    lon2 = radians(p2[0])
+    lat2 = radians(p2[1])
+
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+    # Вычисление расстояние
+    distance = R * c
+    # Возвращение расстояния
+    return distance
 
 
 # проверка на источник запуска программы
