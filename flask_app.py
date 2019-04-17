@@ -94,12 +94,23 @@ def handle_dialog(res, req):
             hint = sessionStorage[user_id]['hint']
             ans = sessionStorage[user_id]['answer']
             n = random.randint(0, len(hint) - 1)
+
             # Добавляем букву в подсказку
             while hint[n] != '*' and '*' in hint:
                 n = random.randint(0, len(hint) - 1)
             hint = hint[:n] + ' '.join(ans)[n] + hint[n + 1:]
+
             # Вывод подсказки
             res['response']['text'] = hint
+
+            # Доавбление кнопки подсказки
+            res['response']['buttons'] = [
+                {
+                    'title': 'Подсказку',
+                    'hide': True
+                }
+            ]
+
             # Изменение подсказки в сессии
             sessionStorage[user_id]['hint'] = hint
             return
@@ -162,6 +173,15 @@ def handle_dialog(res, req):
         # Случайная загадка из словаря с загадками
         question = random.choice(list(data))
         res['response']['text'] = question
+
+        # Доавбление кнопки подсказки
+        res['response']['buttons'] = [
+            {
+                'title': 'Подсказку',
+                'hide': True
+            }
+        ]
+
         # Запись в сессию случайной загадки
         sessionStorage[user_id]['answer'] = data[question].split()
         sessionStorage[user_id]['mystery'] = True
