@@ -124,6 +124,19 @@ def handle_dialog(res, req):
         else:
             # Если правильный очистка ответа
             res['response']['text'] = 'Правильно! Продолжим играть?'
+            # Кнопки для ответа
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
+
+            # Обнуление ответа
             sessionStorage[user_id]['exp'] = ''
         return
 
@@ -144,11 +157,11 @@ def handle_dialog(res, req):
 
         # Создание примера
         exp = str(random.randint(0, 100))
-        exp += str(random.choice(operators)[0])
+        op = str(random.choice(operators)[0])
+        exp += op
         exp += str(random.randint(0, 100))
-        res['response']['text'] = exp
 
-        # Запись ответа в сессию
+        res['response']['text'] = str(exp)
         sessionStorage[user_id]['exp'] = str(eval(exp))
         return
 
@@ -166,12 +179,13 @@ def handle_dialog(res, req):
         elif sessionStorage[user_id]['math']:
             # Создание примера
             exp = str(random.randint(0, 100))
-            exp += str(random.choice(operators)[0])
+            op = str(random.choice(operators)[0])
+            exp += op
             exp += str(random.randint(0, 100))
-            res['response']['text'] = exp
 
-            # Запись ответа в сессию
+            res['response']['text'] = str(exp)
             sessionStorage[user_id]['exp'] = str(eval(exp))
+        return
 
     # Если пользователь решил закончить игру
     elif 'нет' in req['request']['nlu']['tokens']:
@@ -182,6 +196,29 @@ def handle_dialog(res, req):
         # Предложение выбрать новую игру
         res['response']['text'] = 'Выбери игру'
         # Кнопки для выбора игры
+        res['response']['buttons'] = [
+            {
+                'title': 'Загадку',
+                'hide': True
+            },
+            {
+                'title': 'Пример',
+                'hide': True
+            }
+        ]
+        return
+
+    # Если пользователь запрос помощь о приложении
+    elif 'помощь' in req['request']['nlu']['tokens']:
+        res['response']['text'] = 'Приложение для игры в загадки и тренировку '
+        res['response']['text'] += 'решения легких математических примеров'
+        return
+
+    # Если пользователь спросил "Что ты умеешь?"
+    elif 'что' in req['request']['nlu']['tokens'] and 'умеешь' in req['nlu']['tokens']:
+        res['response']['text'] = 'Я могу загадать загадку или придумать легкий'
+        res['response']['text'] += ' математический пример'
+        # Кнопки для начала игры
         res['response']['buttons'] = [
             {
                 'title': 'Загадку',
