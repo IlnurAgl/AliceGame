@@ -352,6 +352,12 @@ def handle_dialog(res, req):
         res['response']['text'] = 'Отгадай расстояние между городами '
         res['response']['text'] += first + ' и '
         res['response']['text'] += second
+        res['response']['text'] = [
+            {
+                'title': 'Ответ',
+                'hide': True
+            }
+        ]
         return
 
     # Если пользователь хочет продолжить игру
