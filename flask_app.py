@@ -190,7 +190,7 @@ def handle_dialog(res, req):
             # Вывод ответа
             result = sessionStorage[user_id]['distance']
             res['response']['text'] = 'Ответ: '
-            res['response']['text'] += str(int(result))
+            res['response']['text'] += str(int(result)) + 'м'
 
             # Предложение сыграть еще раз
             res['response']['text'] += '. Сыграем еще?'
