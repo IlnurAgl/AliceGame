@@ -120,7 +120,7 @@ def handle_dialog(res, req):
         # Если ответ не правильный
         result = req['request']['nlu']['tokens'][0]
         if sessionStorage[user_id]['exp'] != result:
-            res['response']['text'] = 'Неправильно!'
+            res['response']['text'] = 'Неправильно!('
         else:
             # Если правильный очистка ответа
             res['response']['text'] = 'Правильно! Продолжим играть?'
@@ -161,8 +161,17 @@ def handle_dialog(res, req):
         exp += op
         exp += str(random.randint(0, 100))
 
+        if op == '/':
+            first = random.randint(1, 100)
+            second = random.randint(1, 100)
+            while first % second != 0:
+                first = random.randint(1, 100)
+                second = random.randint(1, 100)
+            exp = str(first) + op + str(second)
+
+
         res['response']['text'] = str(exp)
-        sessionStorage[user_id]['exp'] = str(eval(exp))
+        sessionStorage[user_id]['exp'] = str(int(eval(exp)))
         return
 
     # Если пользователь хочет продолжить игру
@@ -183,8 +192,16 @@ def handle_dialog(res, req):
             exp += op
             exp += str(random.randint(0, 100))
 
+            if op == '/':
+                first = random.randint(1, 100)
+                second = random.randint(1, 100)
+                while first % second != 0:
+                    first = random.randint(1, 100)
+                    second = random.randint(1, 100)
+                exp = str(first) + op + str(second)
+
             res['response']['text'] = str(exp)
-            sessionStorage[user_id]['exp'] = str(eval(exp))
+            sessionStorage[user_id]['exp'] = str(int(eval(exp)))
         return
 
     # Если пользователь решил закончить игру
