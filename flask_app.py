@@ -87,6 +87,23 @@ def handle_dialog(res, req):
             res['response']['text'] = text
             return
 
+    # Если пользователь попросил подсказку
+    elif 'подсказку' in req['request']['nlu']['tokens']:
+        # Вывести случайную букву из ответа
+        if sessionStorage[user_id]['mystery']:
+            hint = sessionStorage[user_id]['hint']
+            ans = sessionStorage[user_id]['answer']
+            n = random.randint(0, len(hint) - 1)
+            # Добавляем букву в подсказку
+            while hint[n] != '*' and '*' in hint:
+                n = random.randint(0, len(hint) - 1)
+            hint = hint[:n] + ' '.join(ans)[n] + hint[n + 1:]
+            # Вывод подсказки
+            res['response']['text'] = hint
+            # Изменение подсказки в сессии
+            sessionStorage[user_id]['hint'] = hint
+            return
+
     # Если пользователь начал игру
     elif sessionStorage[user_id]['answer']:
         t = False
@@ -148,6 +165,7 @@ def handle_dialog(res, req):
         # Запись в сессию случайной загадки
         sessionStorage[user_id]['answer'] = data[question].split()
         sessionStorage[user_id]['mystery'] = True
+        sessionStorage[user_id]['hint'] = len(data[question]) * '*'
         return
 
     # Если пользователь попросил пример
@@ -256,7 +274,7 @@ def handle_dialog(res, req):
         return
 
     # Если пользователь спросил "Что ты умеешь?"
-    elif 'что' in req['request']['nlu']['tokens'] and 'умеешь' in req['nlu']['tokens']:
+    elif 'умеешь' in req['nlu']['tokens']:
         res['response']['text'] = 'Я могу загадать загадку или придумать '
         res['response']['text'] += 'легкий математический пример'
         # Кнопки для начала игры
