@@ -161,17 +161,29 @@ def handle_dialog(res, req):
         exp += op
         exp += str(random.randint(0, 100))
 
+        # Если деление, то проверка на целочисленность ответа
         if op == '/':
             first = random.randint(1, 100)
             second = random.randint(1, 100)
+            # Пока первое не делится на второе
             while first % second != 0:
                 first = random.randint(1, 100)
                 second = random.randint(1, 100)
             exp = str(first) + op + str(second)
 
+        # Вычисление результата
+        result = int(eval(exp))
+        # Если результат меньше нуля
+        while result < 0:
+            exp = str(random.randint(1, 100))
+            exp += '-'
+            exp += str(random.randint(1, 100))
+            result = int(eval(exp))
 
+        # Отправка примера пользователю
         res['response']['text'] = str(exp)
-        sessionStorage[user_id]['exp'] = str(int(eval(exp)))
+        # Запись ответа в сессию
+        sessionStorage[user_id]['exp'] = str(result)
         return
 
     # Если пользователь хочет продолжить игру
@@ -192,16 +204,28 @@ def handle_dialog(res, req):
             exp += op
             exp += str(random.randint(0, 100))
 
+            # Если деление, то проверка на целочисленность ответа
             if op == '/':
                 first = random.randint(1, 100)
                 second = random.randint(1, 100)
+                # Пока первое не делится на второе
                 while first % second != 0:
                     first = random.randint(1, 100)
                     second = random.randint(1, 100)
                 exp = str(first) + op + str(second)
 
+            # Вычисление результата
+            result = int(eval(exp))
+            while result < 0:
+                exp = str(random.randint(1, 100))
+                exp += '-'
+                exp += str(random.randint(1, 100))
+                result = int(eval(exp))
+
+            # Отправка примера пользователю
             res['response']['text'] = str(exp)
-            sessionStorage[user_id]['exp'] = str(int(eval(exp)))
+            # Запись ответа в сессию
+            sessionStorage[user_id]['exp'] = str(result)
         return
 
     # Если пользователь решил закончить игру
@@ -233,8 +257,8 @@ def handle_dialog(res, req):
 
     # Если пользователь спросил "Что ты умеешь?"
     elif 'что' in req['request']['nlu']['tokens'] and 'умеешь' in req['nlu']['tokens']:
-        res['response']['text'] = 'Я могу загадать загадку или придумать легкий'
-        res['response']['text'] += ' математический пример'
+        res['response']['text'] = 'Я могу загадать загадку или придумать '
+        res['response']['text'] += 'легкий математический пример'
         # Кнопки для начала игры
         res['response']['buttons'] = [
             {
