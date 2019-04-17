@@ -108,11 +108,59 @@ def handle_dialog(res, req):
                 {
                     'title': 'Подсказку',
                     'hide': True
+                },
+                {
+                    'title': 'Ответ',
+                    'hide': True
                 }
             ]
 
             # Изменение подсказки в сессии
             sessionStorage[user_id]['hint'] = hint
+            return
+
+    # Если пользователь попросил ответ
+    elif 'ответ' in req['request']['nlu']['tokens']:
+        # Если запущена игра про загадки
+        if sessionStorage[user_id]['mystery']:
+            # Вывод ответ
+            ans = sessionStorage[user_id]['answer']
+            res['response']['text'] = 'Ответ: ' + ' '.join(ans)
+            # Предложение сыграть еще раз
+            res['response']['text'] += '. Сыграем еще?'
+            # Кнопки для выбора ответа
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
+            # Обнуление сессии
+            sessionStorage[user_id]['answer'] = ''
+            return
+        # Если запущена игра для решения примеров
+        elif sessionStorage[user_id]['math']:
+            # Вывод ответа
+            res['response']['text'] = 'Ответ: ' + sessionStorage[user_id]['exp']
+            # Предложение сыграть еще раз
+            res['response']['text'] += '. Сыграем еще?'
+            # Кнопки для выбора ответа
+            res['response']['buttons'] = [
+                {
+                    'title': 'Да',
+                    'hide': True
+                },
+                {
+                    'title': 'Нет',
+                    'hide': True
+                }
+            ]
+            # Обнуление сессии
+            sessionStorage[user_id]['exp'] = ''
             return
 
     # Если пользователь начал игру
@@ -179,6 +227,10 @@ def handle_dialog(res, req):
             {
                 'title': 'Подсказку',
                 'hide': True
+            },
+            {
+                'title': 'Ответ',
+                'hide': True
             }
         ]
 
@@ -220,6 +272,13 @@ def handle_dialog(res, req):
 
         # Отправка примера пользователю
         res['response']['text'] = str(exp)
+        # Добавление кнопок
+        res['response']['buttons'] = [
+            {
+                'title': 'Ответ',
+                'hide': True
+            }
+        ]
         # Запись ответа в сессию
         sessionStorage[user_id]['exp'] = str(result)
         return
