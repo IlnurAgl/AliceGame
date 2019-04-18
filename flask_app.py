@@ -245,7 +245,7 @@ def handle_dialog(res, req):
         result = req['request']['nlu']['tokens'][0]
         if int(result) > sessionStorage[user_id]['distance']:
             res['response']['text'] = 'Меньше'
-            res['response']['text'] = [
+            res['response']['buttons'] = [
                 {
                     'title': 'Ответ',
                     'hide': True
@@ -253,7 +253,7 @@ def handle_dialog(res, req):
             ]
         elif int(result) < int(sessionStorage[user_id]['distance']):
             res['response']['text'] = 'Больше'
-            res['response']['text'] = [
+            res['response']['buttons'] = [
                 {
                     'title': 'Ответ',
                     'hide': True
@@ -445,7 +445,7 @@ def handle_dialog(res, req):
         return
 
     # Если пользователь спросил "Что ты умеешь?"
-    elif 'умеешь' in req['nlu']['tokens']:
+    elif 'умеешь' in req['request']['nlu']['tokens']:
         res['response']['text'] = 'Я могу загадать загадку или придумать '
         res['response']['text'] += 'легкий математический пример'
 
@@ -503,6 +503,7 @@ def get_distance(p1, p2):
     lon2 = radians(p2[0])
     lat2 = radians(p2[1])
 
+    # Вычисление расстояния
     dlon = lon2 - lon1
     dlat = lat2 - lat1
 
